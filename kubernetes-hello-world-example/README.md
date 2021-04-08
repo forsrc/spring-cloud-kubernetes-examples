@@ -56,3 +56,34 @@ Should return you the list of available services discovered by the DiscoveryClie
 ``` 
 mvn clean install -Pintegration
 ```
+
+```
+
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: kubernetes-hello-world
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "watch", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: default
+  name: kubernetes-hello-world
+subjects:
+- kind: ServiceAccount
+  name: default
+roleRef:
+  kind: Role
+  name: kubernetes-hello-world
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
+```
