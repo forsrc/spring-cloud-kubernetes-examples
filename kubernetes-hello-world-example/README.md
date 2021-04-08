@@ -56,9 +56,50 @@ Should return you the list of available services discovered by the DiscoveryClie
 ``` 
 mvn clean install -Pintegration
 ```
+```yaml
+
+cat <<EOF | kubectl apply -f -
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: kubernetes-hello-world
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  namespace: default
+  name: kubernetes-hello-world
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "watch", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: default
+  name: kubernetes-hello-world
+subjects:
+- kind: ServiceAccount
+  name: kubernetes-hello-world
+roleRef:
+  kind: ClusterRole
+  name: kubernetes-hello-world
+  apiGroup: rbac.authorization.k8s.io
+
+EOF
+
+```
 
 ```yaml
 
+cat <<EOF | kubectl apply -f -
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -95,6 +136,7 @@ spec:
         provider: fabric8
         version: 2.0.2
     spec:
+      serviceAccountName: kubernetes-hello-world
       containers:
       - env:
         - name: KUBERNETES_NAMESPACE
@@ -145,36 +187,8 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
-
-```
-
-```yaml
-
-cat <<EOF | kubectl apply -f -
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  namespace: default
-  name: kubernetes-hello-world
-rules:
-- apiGroups: [""]
-  resources: ["pods", "services"]
-  verbs: ["get", "watch", "list"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  namespace: default
-  name: kubernetes-hello-world
-subjects:
-- kind: ServiceAccount
-  name: default
-roleRef:
-  kind: Role
-  name: kubernetes-hello-world
-  apiGroup: rbac.authorization.k8s.io
 EOF
 
 ```
+
+
